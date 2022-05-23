@@ -10,4 +10,5 @@ data class User(
   private val id: Long,
   val name: String,
   val email: String,
+  val imageUrl: String,
 )
