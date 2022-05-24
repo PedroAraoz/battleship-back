@@ -9,9 +9,21 @@ data class LoginDTO(
   val refreshToken: String
 )
 
+data class LoginResponseDTO(
+  val email: String,
+  val idToken: String,
+  val refreshToken: String
+)
+
 fun LoginDTO.toUser(): User = User(
   id = 0,
   name = this.name,
   email = this.email,
   imageUrl = this.imageUrl,
+)
+
+fun LoginDTO.toLoginResponseDTO(): LoginResponseDTO = LoginResponseDTO(
+  email = this.email,
+  idToken = this.idToken,
+  refreshToken = this.refreshToken
 )

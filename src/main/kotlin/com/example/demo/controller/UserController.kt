@@ -1,12 +1,11 @@
 package com.example.demo.controller
 
-import com.example.demo.model.LoginDTO
-import com.example.demo.model.User
-import com.example.demo.model.toUser
+import com.example.demo.model.*
 import com.example.demo.service.AuthenticationService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
@@ -34,20 +33,23 @@ class UserController(
   }
 
   @PostMapping("/login")
-  fun login(@RequestBody loginDTO: LoginDTO) {
-    val user: User? = authenticate(loginDTO.idToken)
+  fun login(@RequestBody loginDTO: LoginDTO): LoginResponseDTO {
+    val user: User? = userService.getUserByEmail(loginDTO.email)
+    // if user does not exist we create one
     if (user == null) {
       userService.saveUser(loginDTO.toUser())
     }
-    //login
+    return loginDTO.toLoginResponseDTO()
   }
 
-  private fun authenticate(idToken: String): User? {
-    val email: String = authenticationService.authenticate(idToken) ?: throw ResponseStatusException(
-      HttpStatus.UNAUTHORIZED,
-      "Error authenticating google idToken"
-    )
-    return userService.getUserByEmail(email)
+  private fun getUser(): User? {
+    val principal = SecurityContextHolder.getContext().authentication.principal
+            as org.springframework.security.core.userdetails.User
+    return userService.getUserByEmail(principal.username)
+  }
+
+  private fun getUserOrError(): User {
+    return getUser() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
   }
 
 }
