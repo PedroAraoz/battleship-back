@@ -2,12 +2,14 @@ package com.example.demo.controller
 
 import com.example.demo.model.Chat
 import com.example.demo.model.Message
+import com.example.demo.model.MessageDTO
 import com.example.demo.model.User
 import com.example.demo.service.ChatService
 import com.example.demo.service.MessageService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,12 +23,27 @@ class ChatController(
   @Autowired private val messageService: MessageService,
   @Autowired private val chatService: ChatService,
   @Autowired private val userService: UserService,
+  @Autowired private val simpMessagingTemplate: SimpMessagingTemplate
 ) {
 
   @PostMapping("/chat/join")
   fun joinChat(): String {
     val user = getAuthUserOrError()
-    return chatService.joinOrCreateChat(user)
+    val id = UUID.fromString(chatService.joinOrCreateChat(user))
+    val hasStarted = hasChatStarted(id)
+    // return the id of the chat
+    try {
+      return id.toString()
+    } finally {
+      // if chat has already started we need to notify the participants
+      if (hasStarted) {
+        Thread.sleep(1_000) // wait a second
+        simpMessagingTemplate.convertAndSend(
+          "/queue/messages",
+          MessageDTO(chatId = id, content = "chat started")
+        )
+      }
+    }
   }
 
   @GetMapping("/chat/started/{chatId}")
