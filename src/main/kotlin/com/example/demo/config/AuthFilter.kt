@@ -16,7 +16,8 @@ class AuthFilter(
 ) : OncePerRequestFilter() {
 
   override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
-    if ("/user/login" == request.requestURI){
+    val uri = request.requestURI
+    if (uri in listOf("/user/login", "/user/")) {
       filterChain.doFilter(request, response)
       return
     }

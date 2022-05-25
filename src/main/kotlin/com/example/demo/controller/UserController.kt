@@ -42,14 +42,14 @@ class UserController(
     return loginDTO.toLoginResponseDTO()
   }
 
-  private fun getUser(): User? {
+  private fun getAuthUser(): User? {
     val principal = SecurityContextHolder.getContext().authentication.principal
             as org.springframework.security.core.userdetails.User
     return userService.getUserByEmail(principal.username)
   }
 
-  private fun getUserOrError(): User {
-    return getUser() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+  private fun getAuthUserOrError(): User {
+    return getAuthUser() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
   }
 
 }

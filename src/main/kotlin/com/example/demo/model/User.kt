@@ -7,7 +7,7 @@ import javax.persistence.*
 data class User(
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private val id: Long,
+  val id: Long,
   val name: String,
   val email: String,
   val imageUrl: String,
