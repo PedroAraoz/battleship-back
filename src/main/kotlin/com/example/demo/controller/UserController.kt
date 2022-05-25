@@ -1,10 +1,10 @@
 package com.example.demo.controller
 
 import com.example.demo.model.*
+import com.example.demo.service.AuthenticationService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException
 @RequestMapping("/user")
 class UserController(
   @Autowired private val userService: UserService,
+  @Autowired private val authenticationService: AuthenticationService
 ) {
 
   @GetMapping("/{id}")
@@ -33,7 +34,11 @@ class UserController(
 
   @PostMapping("/login")
   fun login(@RequestBody loginDTO: LoginDTO): LoginResponseDTO {
-    //todo checkear token!!
+    authenticationService.authenticate(loginDTO.idToken)
+      ?: throw ResponseStatusException(
+        HttpStatus.UNAUTHORIZED,
+        "id token not valid"
+      )
     val user: User? = userService.getUserByEmail(loginDTO.email)
     // if user does not exist we create one
     if (user == null) {
