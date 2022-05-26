@@ -34,3 +34,8 @@ fun MessageDTO.toMessage(senderId: Long) = Message(
   content = this.content,
   timestamp = LocalDate.now(),
 )
+
+fun Message.toDTO() = MessageDTO(
+  chatId = this.chatUuid,
+  content = this.content
+)
