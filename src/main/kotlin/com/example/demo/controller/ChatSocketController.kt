@@ -34,7 +34,7 @@ class ChatSocketController(
     chatService.addMessage(chat, saved)
     simpMessagingTemplate.convertAndSend(
       "/queue/messages/$chatId",
-      message.toDTO()
+      message
     )
   }
 
