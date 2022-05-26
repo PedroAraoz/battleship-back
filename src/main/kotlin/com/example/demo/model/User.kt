@@ -8,7 +8,8 @@ data class User(
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   val id: Long,
-  val name: String,
   val email: String,
+  val firstName: String,
+  val lastname: String,
   val imageUrl: String,
 )

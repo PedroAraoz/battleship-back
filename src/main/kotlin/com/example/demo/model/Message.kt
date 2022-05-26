@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne
 data class Message(
   @Id
   @GeneratedValue
-  val id: Long,
+  private val id: Long,
   val senderId: Long,
   val chatUuid: UUID,
   val content: String,

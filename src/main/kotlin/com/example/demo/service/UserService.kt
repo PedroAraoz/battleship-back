@@ -15,8 +15,8 @@ class UserService(
     return userRepository.findByIdOrNull(id)
   }
 
-  fun saveUser(@RequestBody user: User) {
-    userRepository.save(user)
+  fun saveUser(@RequestBody user: User) : User {
+    return userRepository.save(user)
   }
 
   fun getUserByEmail(email: String): User? {

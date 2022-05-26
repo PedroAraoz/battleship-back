@@ -1,6 +1,7 @@
 package com.example.demo.controller
 
-import com.example.demo.model.*
+import com.example.demo.model.LoginDTO
+import com.example.demo.model.User
 import com.example.demo.service.AuthenticationService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,18 +34,20 @@ class UserController(
   }
 
   @PostMapping("/login")
-  fun login(@RequestBody loginDTO: LoginDTO): LoginResponseDTO {
-    authenticationService.authenticate(loginDTO.idToken)
+  fun login(@RequestBody loginDTO: LoginDTO): User {
+    val email: String = authenticationService.authenticate(loginDTO.idToken)
       ?: throw ResponseStatusException(
         HttpStatus.UNAUTHORIZED,
         "id token not valid"
       )
-    val user: User? = userService.getUserByEmail(loginDTO.email)
+    val user: User? = userService.getUserByEmail(email)
     // if user does not exist we create one
-    if (user == null) {
-      userService.saveUser(loginDTO.toUser())
+    return if (user == null) {
+      val newUser = authenticationService.getUserFromData(loginDTO.idToken)
+      userService.saveUser(newUser)
+    } else {
+      user
     }
-    return loginDTO.toLoginResponseDTO()
   }
 
   private fun getAuthUser(): User? {

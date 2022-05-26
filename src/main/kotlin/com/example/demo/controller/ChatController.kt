@@ -39,7 +39,7 @@ class ChatController(
       if (hasStarted) {
         Thread.sleep(1_000) // wait a second
         simpMessagingTemplate.convertAndSend(
-          "/queue/messages",
+          "/queue/messages/$id",
           MessageDTO(chatId = id, content = "chat started")
         )
       }
