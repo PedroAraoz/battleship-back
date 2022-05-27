@@ -1,10 +1,10 @@
 package com.example.demo.controller
 
-import com.example.demo.model.Chat
+import com.example.demo.model.Game
 import com.example.demo.model.Message
 import com.example.demo.model.MessageDTO
 import com.example.demo.model.User
-import com.example.demo.service.ChatService
+import com.example.demo.service.GameService
 import com.example.demo.service.MessageService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,54 +19,54 @@ import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @RestController
-class ChatController(
+class GameController(
   @Autowired private val messageService: MessageService,
-  @Autowired private val chatService: ChatService,
+  @Autowired private val gameService: GameService,
   @Autowired private val userService: UserService,
   @Autowired private val simpMessagingTemplate: SimpMessagingTemplate
 ) {
 
-  @PostMapping("/chat/join")
-  fun joinChat(): String {
+  @PostMapping("/game/join")
+  fun joinGame(): String {
     val user = getAuthUserOrError()
-    val id = UUID.fromString(chatService.joinOrCreateChat(user))
-    val hasStarted = hasChatStarted(id)
-    // return the id of the chat
+    val id = UUID.fromString(gameService.joinOrCreateGame(user))
+    val hasStarted = hasGameStarted(id)
+    // return the id of the game
     try {
       return id.toString()
     } finally {
-      // if chat has already started we need to notify the participants
+      // if game has already started we need to notify the participants
       if (hasStarted) {
         Thread.sleep(1_000) // wait a second
         simpMessagingTemplate.convertAndSend(
           "/queue/messages/$id",
-          MessageDTO(chatId = id, content = "chat started")
+          MessageDTO(gameId = id, content = "game started")
         )
       }
     }
   }
 
-  @GetMapping("/chat/started/{chatId}")
-  fun hasChatStarted(@PathVariable chatId: UUID): Boolean {
+  @GetMapping("/game/started/{gameId}")
+  fun hasGameStarted(@PathVariable gameId: UUID): Boolean {
     val user = getAuthUserOrError()
-    val chat: Chat = chatService.getChat(chatId)
+    val game: Game = gameService.getGame(gameId)
       ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-    if (!chatService.ifUserBelongs(user.id, chat)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-    return chatService.hasChatStarted(chat)
+    if (!gameService.ifUserBelongs(user.id, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+    return gameService.hasGameStarted(game)
   }
 
-  @GetMapping("/chat/{chatId}")
-  fun getChat(@PathVariable chatId: UUID): Chat {
+  @GetMapping("/game/{gameId}")
+  fun getGame(@PathVariable gameId: UUID): Game {
     val user = getAuthUserOrError()
-    val chat: Chat = chatService.getChat(chatId)
+    val game: Game = gameService.getGame(gameId)
       ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-    if (!chatService.ifUserBelongs(user.id, chat)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-    return chat
+    if (!gameService.ifUserBelongs(user.id, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+    return game
   }
 
-  @GetMapping("/messages/{chatId}")
-  fun findChatMessages(@PathVariable chatId: UUID): List<Message> {
-    return messageService.findChatMessages(chatId)
+  @GetMapping("/messages/{gameId}")
+  fun findGameMessages(@PathVariable gameId: UUID): List<Message> {
+    return messageService.findGameMessages(gameId)
       .sortedWith { m1, m2 -> m1.timestamp.compareTo(m2.timestamp) }
   }
 

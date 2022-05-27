@@ -1,12 +1,11 @@
 package com.example.demo.controller
 
 import com.example.demo.model.*
-import com.example.demo.service.ChatService
+import com.example.demo.service.GameService
 import com.example.demo.service.MessageService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -16,24 +15,25 @@ import org.springframework.web.server.ResponseStatusException
 
 
 @Controller
-class ChatSocketController(
+class GameSocketController(
   @Autowired private val messageService: MessageService,
-  @Autowired private val chatService: ChatService,
+  @Autowired private val gameService: GameService,
   @Autowired private val userService: UserService,
   @Autowired private val simpMessagingTemplate: SimpMessagingTemplate
 ) {
-  @MessageMapping("/chat/")
-  fun processMessage(@DestinationVariable chatId: String, @Payload dto: MessageDTO) {
+  @MessageMapping("/game/")
+  fun processMessage(@Payload dto: MessageDTO) {
+    val gameId = dto.gameId
     val userId = getAuthUserOrError().id
-    val chat: Chat = chatService.getChat(dto.chatId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-    //check if user can message in chat
-    if (!chatService.ifUserBelongs(userId, chat)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+    val game: Game = gameService.getGame(gameId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    //check if user can message in game
+    if (!gameService.ifUserBelongs(userId, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 
     val message: Message = dto.toMessage(userId)
     val saved: Message = messageService.save(message)
-    chatService.addMessage(chat, saved)
+    gameService.addMessage(game, saved)
     simpMessagingTemplate.convertAndSend(
-      "/queue/messages/$chatId",
+      "/queue/messages/$gameId",
       message
     )
   }

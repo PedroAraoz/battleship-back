@@ -14,23 +14,23 @@ data class Message(
   @GeneratedValue
   private val id: Long,
   val senderId: Long,
-  val chatUuid: UUID,
+  val gameUuid: UUID,
   val content: String,
   var timestamp: LocalDate,
   @ManyToOne
   @JsonIgnore
-  private val chat: Chat? = null
+  private val game: Game? = null
 )
 
 data class MessageDTO(
-  val chatId: UUID,
+  val gameId: UUID,
   val content: String,
 )
 
 fun MessageDTO.toMessage(senderId: Long) = Message(
   id = -1,
   senderId = senderId,
-  chatUuid = this.chatId,
+  gameUuid = this.gameId,
   content = this.content,
   timestamp = LocalDate.now(),
 )

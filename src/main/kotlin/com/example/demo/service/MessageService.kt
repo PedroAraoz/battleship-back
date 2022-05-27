@@ -10,14 +10,14 @@ import java.util.*
 @Service
 class MessageService(
   @Autowired private val messageRepository: MessageRepository,
-  @Autowired private val chatService: ChatService,
+  @Autowired private val gameService: GameService,
 ) {
 
   fun save(message: Message): Message {
     return messageRepository.save(message)
   }
 
-  fun findChatMessages(chatId: UUID): List<Message> {
-    return chatService.findById(chatId)?.messages ?: listOf()
+  fun findGameMessages(gameId: UUID): List<Message> {
+    return gameService.findById(gameId)?.messages ?: listOf()
   }
 }
