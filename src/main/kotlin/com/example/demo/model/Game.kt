@@ -18,6 +18,7 @@ data class Game(
   var messages: MutableList<Message> = mutableListOf(),
   val createdAt: LocalDate = LocalDate.now(),
   val active: Boolean = true,
+  val winner: Long? = null,
 ) {
   fun addMessage(message: Message) = messages.add(message)
 }
