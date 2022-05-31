@@ -34,6 +34,7 @@ class WebSecurityConfig(
     // Entry points
     http.authorizeRequests()
       .antMatchers(HttpMethod.POST, "/user/login", "/user/").permitAll()
+      .antMatchers(HttpMethod.GET, "/ws/**", "/ws/", "ws/*").permitAll()
       .anyRequest().authenticated().and().cors()
 
     // Apply Filter

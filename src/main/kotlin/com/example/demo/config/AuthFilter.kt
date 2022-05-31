@@ -15,9 +15,11 @@ class AuthFilter(
   @Autowired private val authenticationService: AuthenticationService
 ) : OncePerRequestFilter() {
 
+  private val ignoreUri = listOf(Regex("/user/login"), Regex("/user/"), Regex("/ws/.*"))
+
   override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
     val uri = request.requestURI
-    if (uri in listOf("/user/login", "/user/")) {
+    if (ignoreUri.any { it.matches(uri) }) {
       filterChain.doFilter(request, response)
       return
     }
@@ -55,7 +57,7 @@ class AuthFilter(
   }
 
   private fun getToken(request: HttpServletRequest): String? {
-    return request.cookies.find { it.name == "IDTOKEN" }?.value
+    return request.getHeader("authorization")?.replace("Bearer ", "")
   }
 
 }

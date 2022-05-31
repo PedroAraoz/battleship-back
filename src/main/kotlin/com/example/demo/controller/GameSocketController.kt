@@ -11,10 +11,13 @@ import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.server.ResponseStatusException
 
 
 @Controller
+@CrossOrigin(origins = ["http://localhost:3000"], methods = [ RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT])
 class GameSocketController(
   @Autowired private val messageService: MessageService,
   @Autowired private val gameService: GameService,
