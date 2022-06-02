@@ -1,6 +1,7 @@
 package com.example.demo.controller
 
 import com.example.demo.model.*
+import com.example.demo.service.AuthenticationService
 import com.example.demo.service.GameService
 import com.example.demo.service.MessageService
 import com.example.demo.service.UserService
@@ -9,47 +10,47 @@ import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.server.ResponseStatusException
 
 
 @Controller
-@CrossOrigin(origins = ["http://localhost:3000"], methods = [ RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT])
 class GameSocketController(
   @Autowired private val messageService: MessageService,
   @Autowired private val gameService: GameService,
   @Autowired private val userService: UserService,
-  @Autowired private val simpMessagingTemplate: SimpMessagingTemplate
+  @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,
+  @Autowired private val authenticationService: AuthenticationService,
 ) {
-  @MessageMapping("/game/")
+  @MessageMapping("/game")
   fun processMessage(@Payload dto: MessageDTO) {
-    val gameId = dto.gameId
-    val userId = getAuthUserOrError().id
+    // todo add message with kind and handlers for each kind
+    val gameId = dto.gameId!!
+    val userId = getAuthUserOrError(dto.token!!).id
     val game: Game = gameService.getGame(gameId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     //check if user can message in game
     if (!gameService.ifUserBelongs(userId, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-
+    // todo check if game has started
     val message: Message = dto.toMessage(userId)
     val saved: Message = messageService.save(message)
     gameService.addMessage(game, saved)
     simpMessagingTemplate.convertAndSend(
       "/queue/messages/$gameId",
-      message
+      message.toDTO()
     )
   }
 
 
-  private fun getAuthUser(): User? {
-    val principal = SecurityContextHolder.getContext().authentication.principal
-            as org.springframework.security.core.userdetails.User
-    return userService.getUserByEmail(principal.username)
+  private fun getAuthUser(idToken: String): User? {
+    val email = authenticationService.authenticate(idToken.replace("Bearer ", ""))
+    return if (email != null)
+      userService.getUserByEmail(email)
+    else
+      null
   }
 
-  private fun getAuthUserOrError(): User {
-    return getAuthUser() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+  private fun getAuthUserOrError(idToken: String): User {
+    return getAuthUser(idToken) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
   }
 }
 

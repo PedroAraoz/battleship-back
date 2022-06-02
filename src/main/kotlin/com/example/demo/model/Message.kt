@@ -23,14 +23,22 @@ data class Message(
 )
 
 data class MessageDTO(
-  val gameId: UUID,
-  val content: String,
+  val gameId: UUID? = null,
+  val token: String? = null,
+  val content: String? = null,
+  val timestamp: String? = null
 )
 
 fun MessageDTO.toMessage(senderId: Long) = Message(
   id = -1,
   senderId = senderId,
-  gameUuid = this.gameId,
-  content = this.content,
+  gameUuid = this.gameId!!,
+  content = this.content!!,
   timestamp = LocalDate.now(),
+)
+
+fun Message.toDTO() = MessageDTO(
+  gameId = this.gameUuid,
+  content = this.content,
+  timestamp = this.timestamp.toString()
 )
