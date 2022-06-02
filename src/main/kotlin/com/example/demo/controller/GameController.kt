@@ -1,9 +1,6 @@
 package com.example.demo.controller
 
-import com.example.demo.model.Game
-import com.example.demo.model.Message
-import com.example.demo.model.MessageDTO
-import com.example.demo.model.User
+import com.example.demo.model.*
 import com.example.demo.service.GameService
 import com.example.demo.service.MessageService
 import com.example.demo.service.UserService
@@ -27,13 +24,13 @@ class GameController(
 ) {
 
   @PostMapping("/game/join")
-  fun joinGame(): String {
+  fun joinGame(): SimpleResponse {
     val user = getAuthUserOrError()
     val id = UUID.fromString(gameService.joinOrCreateGame(user))
-    val hasStarted = hasGameStarted(id)
+    val hasStarted = hasGameStarted(id).res.toBooleanStrict()
     // return the id of the game
     try {
-      return id.toString()
+      return SimpleResponse(id.toString())
     } finally {
       // if game has already started we need to notify the participants
       if (hasStarted) {
@@ -47,12 +44,12 @@ class GameController(
   }
 
   @GetMapping("/game/started/{gameId}")
-  fun hasGameStarted(@PathVariable gameId: UUID): Boolean {
+  fun hasGameStarted(@PathVariable gameId: UUID): SimpleResponse {
     val user = getAuthUserOrError()
     val game: Game = gameService.getGame(gameId)
       ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     if (!gameService.ifUserBelongs(user.id, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-    return gameService.hasGameStarted(game)
+    return SimpleResponse(gameService.hasGameStarted(game))
   }
 
   @GetMapping("/game/{gameId}")
@@ -72,7 +69,7 @@ class GameController(
 
   private fun getAuthUser(): User? {
     val principal = SecurityContextHolder.getContext().authentication.principal
-            as org.springframework.security.core.userdetails.User
+      as org.springframework.security.core.userdetails.User
     return userService.getUserByEmail(principal.username)
   }
 
