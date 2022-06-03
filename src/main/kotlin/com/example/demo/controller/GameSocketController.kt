@@ -1,6 +1,7 @@
 package com.example.demo.controller
 
 import com.example.demo.model.*
+import com.example.demo.model.GameMessageType.*
 import com.example.demo.service.AuthenticationService
 import com.example.demo.service.GameService
 import com.example.demo.service.MessageService
@@ -40,6 +41,21 @@ class GameSocketController(
     )
   }
 
+  @MessageMapping("/test")
+  fun test(@Payload m: GameMessage): Boolean {
+    when (m.type) {
+      START -> print("start")
+      GET_BOARD -> print("get board")
+      POSITION_SHIP -> print("position ship")
+      WINNER -> testWinnerFun(m as WinnerMessage)
+      SHIP_POSITION -> TODO()
+    }
+    return true
+  }
+
+  private fun testWinnerFun(m: WinnerMessage) {
+    print("winner ${m.winner}")
+  }
 
   private fun getAuthUser(idToken: String): User? {
     val email = authenticationService.authenticate(idToken.replace("Bearer ", ""))
