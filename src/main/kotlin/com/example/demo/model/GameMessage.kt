@@ -8,39 +8,66 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.node.ObjectNode
-
+import java.awt.Point
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
 
 enum class GameMessageType {
-  START, GET_BOARD, POSITION_SHIP,
+  START, SHIP_PLACEMENT, TURN_START, SHOT, SHOT_RESULT, WAITING,
+  GET_BOARD, BOARD_DATA,
+  GET_STATE,
   WINNER,
-  SHIP_POSITION
 }
 
 @JsonDeserialize(using = GameMessageDeserializer::class)
-abstract class GameMessage {
+@Entity
+abstract class GameMessage(
+  @GeneratedValue @Id
+  private val id: Long = 0,
   @JsonProperty(value = "type")
   val type: GameMessageType = START
-}
+)
+
 
 @JsonDeserialize(`as` = SimpleMessage::class)
-class SimpleMessage : GameMessage()
+class SimpleMessage(
+  type: GameMessageType = START
+) : GameMessage(type = type)
 
 @JsonDeserialize(`as` = WinnerMessage::class)
 data class WinnerMessage(
   val winner: String = ""
 ) : GameMessage()
 
-@JsonDeserialize(`as` = ShipPositionMessage::class)
-data class ShipPositionMessage(
-  val list: List<ShipPos> = listOf()
+@JsonDeserialize(`as` = ShotMessage::class)
+data class ShotMessage(
+  val pos: Point? = null,
+  val random: Boolean = false,
 ) : GameMessage()
 
+@JsonDeserialize(`as` = ShotResultMessage::class)
+data class ShotResultMessage(
+  val pos: Point,
+  val userId: Long = 0,
+  val hit: Boolean = false,
+) : GameMessage() {
+  constructor(shot: Shot) :
+    this(pos = shot.pos, userId = shot.userId, hit = shot.hit!!)
+}
 
-data class ShipPos(
-  val ship: String = "",
-  val x: Number = 0,
-  val y: Number = 0,
-)
+@JsonDeserialize(`as` = ShipPlacementMessage::class)
+data class ShipPlacementMessage(
+  val ships: List<Ship> = listOf(),
+  val random: Boolean = false
+) : GameMessage()
+
+@JsonDeserialize(`as` = BoardDataMessage::class)
+data class BoardDataMessage(
+  val ships: List<Ship> = listOf(),
+  val yourShots: List<Shot> = listOf(),
+  val opponentShots: List<Shot> = listOf()
+) : GameMessage()
 
 internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
   override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): GameMessage? {
@@ -49,14 +76,13 @@ internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
 
     return mapper.readValue(root.toString(),
       when (valueOf(root.get("type").asText())) {
-        START,
-        GET_BOARD,
-        POSITION_SHIP -> SimpleMessage::class.java
-        SHIP_POSITION -> ShipPositionMessage::class.java
+        START, TURN_START, GET_BOARD, WAITING, GET_STATE -> SimpleMessage::class.java
+        SHIP_PLACEMENT -> ShipPlacementMessage::class.java
+        SHOT -> ShotMessage::class.java
+        SHOT_RESULT -> ShotResultMessage::class.java
+        BOARD_DATA -> BoardDataMessage::class.java
         WINNER -> WinnerMessage::class.java
       }
-
     )
-
   }
 }

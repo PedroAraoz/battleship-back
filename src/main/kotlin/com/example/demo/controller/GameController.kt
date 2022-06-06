@@ -1,12 +1,13 @@
 package com.example.demo.controller
 
-import com.example.demo.model.*
+import com.example.demo.model.Game
+import com.example.demo.model.SimpleResponse
+import com.example.demo.model.User
 import com.example.demo.service.GameService
-import com.example.demo.service.MessageService
+import com.example.demo.service.MessagingService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,10 +18,10 @@ import java.util.*
 
 @RestController
 class GameController(
-  @Autowired private val messageService: MessageService,
+//  @Autowired private val messageService: MessageService,
   @Autowired private val gameService: GameService,
   @Autowired private val userService: UserService,
-  @Autowired private val simpMessagingTemplate: SimpMessagingTemplate
+  @Autowired private val messagingService: MessagingService
 ) {
 
   @PostMapping("/game/join")
@@ -35,10 +36,7 @@ class GameController(
       // if game has already started we need to notify the participants
       if (hasStarted) {
         Thread.sleep(1_000) // wait a second
-        simpMessagingTemplate.convertAndSend(
-          "/queue/messages/$id",
-          MessageDTO(gameId = id, content = "game started")
-        )
+        gameService.startGame(id)
       }
     }
   }
@@ -59,12 +57,6 @@ class GameController(
       ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     if (!gameService.ifUserBelongs(user.id, game)) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
     return game
-  }
-
-  @GetMapping("/messages/{gameId}")
-  fun findGameMessages(@PathVariable gameId: UUID): List<Message> {
-    return messageService.findGameMessages(gameId)
-      .sortedWith { m1, m2 -> m1.timestamp.compareTo(m2.timestamp) }
   }
 
   private fun getAuthUser(): User? {

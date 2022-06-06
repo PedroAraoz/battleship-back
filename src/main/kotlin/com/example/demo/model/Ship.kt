@@ -1,17 +1,32 @@
 package com.example.demo.model
 
+import java.awt.Point
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+
+
+@Entity
 data class Ship(
-  val type: ShipType,
-//  val position: ?
-)
+  @Id @GeneratedValue
+  val id: Long = 0,
+  val size: Int,
+  var health: Int = size,
+  val startPos: Point,
+  val endPos: Point,
+  var userId: Long? = null
+) {
+  fun hit() {
+    health -= 1
+  }
 
-data class ShipType(
-  val name: String,
-  val size: Number
-)
+  fun collide(pos: Point): Boolean {
+    val horizontalShip = startPos.y == endPos.y
+    return if (horizontalShip) {
+      pos.x in (startPos.x..endPos.x) || pos.x in (endPos.x..startPos.x)
+    } else {
+      pos.y in (startPos.y..endPos.y) || pos.y in (endPos.y..startPos.y)
+    }
+  }
 
-val smallShip = ShipType(name = "small", size = 1)
-val mediumShip = ShipType(name = "medium", size = 2)
-val bigShip = ShipType(name = "big", size = 3)
-
-
+}

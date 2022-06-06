@@ -12,9 +12,9 @@ interface GameRepository : JpaRepository<Game, UUID> {
   @Query(
     value =
     "SELECT * FROM Game g\n" +
-            "WHERE g.user1 != ?1\n" +
-            "AND g.user2 IS NULL\n" +
-            "ORDER BY g.created_at ASC;",
+      "WHERE g.user1 != ?1\n" +
+      "AND g.user2 IS NULL\n" +
+      "ORDER BY g.created_at ASC;",
     nativeQuery = true
   )
   fun findEmptyGame(userId: Long): List<Game>
@@ -22,8 +22,9 @@ interface GameRepository : JpaRepository<Game, UUID> {
   @Query(
     value =
     "SELECT * FROM Game g\n" +
-            "WHERE g.active = 'true'\n" +
-            "AND (g.user1 = ?1 or g.user2 = ?1);",
+      "WHERE g.started = 'true'\n" +
+      "AND g.winner IS NULL\n" +
+      "AND (g.user1 = ?1 or g.user2 = ?1);",
     nativeQuery = true
   )
   fun getActiveGame(userId: Long): Game?
