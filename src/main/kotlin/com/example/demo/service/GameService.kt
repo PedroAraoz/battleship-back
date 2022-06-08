@@ -18,7 +18,6 @@ class GameService(
   @Autowired private val gameManager: GameManager,
   @Autowired private val shipService: ShipService,
   @Autowired private val shotService: ShotService,
-
 ) {
 
   // empty game : game with only 1 participant
@@ -60,7 +59,7 @@ class GameService(
   }
 
   fun handleShipPlacement(shipPlacementMessage: ShipPlacementMessage, messageInfo: MessageInfo) {
-    val game : Game = getGameOrError(messageInfo.gameId)
+    val game: Game = getGameOrError(messageInfo.gameId)
     val userId: Long = messageInfo.userId
     val ships: List<Ship> = gameManager.getShipsFromMessage(game, shipPlacementMessage)
     if (!gameManager.validateShipPlacement(ships))
@@ -94,8 +93,11 @@ class GameService(
       shipService.saveShip(ship)
     }
     addShot(game, shot)
+    val updatedGame = getGameOrError(game.id)
     messagingService.sendShotMessage(game, shot)
-    changeTurn(game, userId)
+    val winner: Long? = gameManager.checkGameWinner(updatedGame)
+    if (winner != null) messagingService.sendEndGameMessage(game, winner)
+    else changeTurn(game, userId)
   }
 
   private fun changeTurn(game: Game, currentUser: Long) {
@@ -111,12 +113,6 @@ class GameService(
     messagingService.sendBoard(game.id, messageInfo.userId, ships, shots)
   }
 
-  fun getUsers(gameId: UUID): List<Long> {
-    val game: Game = gameRepository.findById(gameId).unwrap() ?: return listOf()
-    return if (game.user2 == null) listOf()
-    else listOf(game.user1, game.user2!!)
-  }
-
   private fun getGame(m: MessageInfo): Game {
     return getGame(m.gameId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND);
   }
@@ -126,7 +122,7 @@ class GameService(
     game.started = true
     game.turn = listOf(game.user1, game.user2!!).random()
     gameRepository.save(game)
-    messagingService.sendStartGameMessage(id, game)
+    messagingService.sendStartGameMessage(game)
   }
 
   fun addShips(g: Game, ships: List<Ship>, userId: Long) {
@@ -145,6 +141,13 @@ class GameService(
   }
 
   fun getState(messageInfo: MessageInfo) {
-    TODO("Not yet implemented")
+    val gameId = messageInfo.gameId
+    val userId = messageInfo.userId
+    val game = getGameOrError(gameId)
+    val shipsPlaced = game.user1SetShips && game.user2SetShips
+    if (!shipsPlaced) messagingService.reSendStartGameMessage(game.id, userId)
+    else if (game.winner != null) messagingService.reSendEndGameMessage(game, userId)
+    else if (game.turn == userId) messagingService.sendTurnStart(game)
+    else messagingService.sendWaitMessage(game, userId)
   }
 }

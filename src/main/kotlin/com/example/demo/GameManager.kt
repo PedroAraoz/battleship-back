@@ -73,4 +73,10 @@ class GameManager {
     return game.turn == userId
   }
 
+  fun checkGameWinner(game: Game): Long? {
+    val (user1Ships: List<Ship>, user2Ships: List<Ship>) = game.ships.partition { it.userId == game.user1}
+    return if (user1Ships.none { it.health > 0 }) game.user2!!
+    else if (user2Ships.none { it.health > 0 }) game.user1
+    else null
+  }
 }

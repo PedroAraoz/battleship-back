@@ -17,7 +17,7 @@ data class Game(
 //  @OneToMany(mappedBy = "game", fetch = FetchType.EAGER)
 //  var messages: MutableList<GameMessage> = mutableListOf(),
   val createdAt: LocalDate = LocalDate.now(),
-  var started: Boolean = true,
+  var started: Boolean = false,
   val winner: Long? = null,
   var turn: Long? = null,
 

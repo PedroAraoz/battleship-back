@@ -37,21 +37,21 @@ class SimpleMessage(
 
 @JsonDeserialize(`as` = WinnerMessage::class)
 data class WinnerMessage(
-  val winner: String = ""
-) : GameMessage()
+  val winner: Long = 0
+) : GameMessage(type = WINNER)
 
 @JsonDeserialize(`as` = ShotMessage::class)
 data class ShotMessage(
   val pos: Point? = null,
   val random: Boolean = false,
-) : GameMessage()
+) : GameMessage(type = SHOT)
 
 @JsonDeserialize(`as` = ShotResultMessage::class)
 data class ShotResultMessage(
   val pos: Point,
   val userId: Long = 0,
   val hit: Boolean = false,
-) : GameMessage() {
+) : GameMessage(type = SHOT_RESULT) {
   constructor(shot: Shot) :
     this(pos = shot.pos, userId = shot.userId, hit = shot.hit!!)
 }
@@ -60,14 +60,14 @@ data class ShotResultMessage(
 data class ShipPlacementMessage(
   val ships: List<Ship> = listOf(),
   val random: Boolean = false
-) : GameMessage()
+) : GameMessage(type = SHIP_PLACEMENT)
 
 @JsonDeserialize(`as` = BoardDataMessage::class)
 data class BoardDataMessage(
   val ships: List<Ship> = listOf(),
   val yourShots: List<Shot> = listOf(),
   val opponentShots: List<Shot> = listOf()
-) : GameMessage()
+) : GameMessage(type = BOARD_DATA)
 
 internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
   override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): GameMessage? {

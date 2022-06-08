@@ -9,7 +9,7 @@ import java.util.*
 @Service
 class MessagingService(
   @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,
-  ) {
+) {
 
   fun sendMessage(gameId: UUID, userId: Long, message: GameMessage) {
     simpMessagingTemplate.convertAndSend(
@@ -28,8 +28,12 @@ class MessagingService(
     }
   }
 
-  fun sendStartGameMessage(gameId: UUID, game: Game) {
-    sendStartGameMessage(gameId, getUsers(game), SimpleMessage(GameMessageType.START))
+  fun reSendStartGameMessage(gameId: UUID, userId: Long) {
+    sendStartGameMessage(gameId, listOf(userId), SimpleMessage(GameMessageType.START))
+  }
+
+  fun sendStartGameMessage(game: Game) {
+    sendStartGameMessage(game.id, getUsers(game), SimpleMessage(GameMessageType.START))
   }
 
   fun sendShotMessage(game: Game, shot: Shot) {
@@ -46,7 +50,7 @@ class MessagingService(
 
   private fun getUsers(game: Game) = listOf(game.user1, game.user2!!)
   fun sendBoard(id: UUID, userId: Long, ships: List<Ship>, shots: List<Shot>) {
-    val (your, opponent) = shots.partition { it.userId == userId}
+    val (your, opponent) = shots.partition { it.userId == userId }
     val message = BoardDataMessage(
       ships = ships,
       yourShots = your,
@@ -64,6 +68,30 @@ class MessagingService(
       game.id,
       game.turn!!,
       SimpleMessage(GameMessageType.TURN_START)
-      )
+    )
+  }
+
+  fun sendEndGameMessage(game: Game, winner: Long) {
+    val message = WinnerMessage(
+      winner = winner
+    )
+    game.getUsers().forEach {
+      sendMessage(game.id, it, message)
+    }
+  }
+
+  fun reSendEndGameMessage(game: Game, userId: Long) {
+    val message = WinnerMessage(
+      winner = game.winner!!
+    )
+    sendMessage(game.id, userId, message)
+  }
+
+  fun sendWaitMessage(game: Game, userId: Long) {
+    sendMessage(
+      game.id,
+      userId,
+      SimpleMessage(GameMessageType.WAITING)
+    )
   }
 }
