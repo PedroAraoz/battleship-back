@@ -1,10 +1,12 @@
 package com.example.demo.controller
 
+import com.example.demo.helper.printlnCyan
 import com.example.demo.model.GameMessage
 import com.example.demo.model.GameMessageType.*
 import com.example.demo.model.ShipPlacementMessage
 import com.example.demo.model.ShotMessage
 import com.example.demo.service.GameService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -32,7 +34,8 @@ class GameSocketController(
     @Payload m: GameMessage
   ): Boolean {
     val messageInfo = MessageInfo(gameId, userId)
-    // todo save message?
+    val jsonMessage = ObjectMapper().writeValueAsString(m)
+    printlnCyan("Received message: $jsonMessage")
     when (m.type) {
 
       SHIP_PLACEMENT -> gameService.handleShipPlacement(m as ShipPlacementMessage, messageInfo)

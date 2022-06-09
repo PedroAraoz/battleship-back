@@ -1,6 +1,5 @@
 package com.example.demo.service
 
-import com.example.demo.GameManager
 import com.example.demo.controller.GameSocketController.MessageInfo
 import com.example.demo.helper.unwrap
 import com.example.demo.model.*
@@ -125,8 +124,7 @@ class GameService(
   fun startGame(id: UUID) {
     val game: Game = getGameOrError(id)
     game.started = true
-//    game.turn = listOf(game.user1).random()
-    game.turn = listOf(game.user1, game.user2!!).random()
+    game.turn = gameManager.chooseRandomTurn(game)
     gameRepository.save(game)
     messagingService.sendStartGameMessage(game)
   }

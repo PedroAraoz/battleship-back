@@ -1,4 +1,4 @@
-package com.example.demo
+package com.example.demo.service
 
 import com.example.demo.model.*
 import org.springframework.stereotype.Service
@@ -7,8 +7,8 @@ import java.awt.Point
 @Service
 class GameManager {
 
-  val validShips = listOf(5, 4, 3, 3, 2).sorted()
-//  val validShips = listOf(2, 2).sorted()
+  private val DEBUG = false
+  val validShips = if (DEBUG) listOf(2, 2).sorted() else listOf(5, 4, 3, 3, 2).sorted()
 
   fun createShot(game: Game, shotMessage: ShotMessage, userId: Long): Shot {
     val myShots = getShotsFromUser(game, userId)
@@ -81,5 +81,10 @@ class GameManager {
     return if (user1Ships.none { it.health > 0 }) game.user2!!
     else if (user2Ships.none { it.health > 0 }) game.user1
     else null
+  }
+
+  fun chooseRandomTurn(game: Game): Long {
+    return if (DEBUG) game.user1
+    else game.getUsers().random()
   }
 }

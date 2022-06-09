@@ -1,5 +1,6 @@
 package com.example.demo.service
 
+import com.example.demo.helper.printlnGreen
 import com.example.demo.model.*
 import com.example.demo.model.GameMessageType.*
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -14,7 +15,7 @@ class MessagingService(
 ) {
 
   fun sendMessage(gameId: UUID, userId: Long, message: GameMessage) {
-    println("$userId :: " + ObjectMapper().writeValueAsString(message))
+    printlnGreen("Sent :: $userId :: " + ObjectMapper().writeValueAsString(message))
     simpMessagingTemplate.convertAndSend(
       "/queue/messages/$gameId/$userId",
       message

@@ -8,12 +8,16 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+    show-sql: false
     generate-ddl: true
     hibernate:
       ddl-auto: create-drop
 #      ddl-auto: update
     database: POSTGRESQL
+  main:
+    banner-mode: off
+
+
 
 server:
   error:

@@ -1,6 +1,8 @@
 package com.example.demo.config
 
+import com.example.demo.controller.GameSocketController
 import com.example.demo.model.User
+import com.example.demo.service.GameService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -10,8 +12,8 @@ import org.springframework.stereotype.Component
 @Component
 class OnStartup(
   @Autowired private val userService: UserService,
-//  @Autowired private val gameService: GameService,
-//  @Autowired private val controller: GameSocketController
+  @Autowired private val gameService: GameService,
+  @Autowired private val controller: GameSocketController
 ) {
   @EventListener(ApplicationReadyEvent::class)
   fun doSomethingAfterStartup() {

@@ -14,8 +14,6 @@ data class Game(
   val id: UUID = UUID.randomUUID(),
   val user1: Long,
   var user2: Long? = null,
-//  @OneToMany(mappedBy = "game", fetch = FetchType.EAGER)
-//  var messages: MutableList<GameMessage> = mutableListOf(),
   val createdAt: LocalDate = LocalDate.now(),
   var started: Boolean = false,
   var winner: Long? = null,
