@@ -8,8 +8,11 @@ import java.awt.Point
 class GameManager {
 
   val validShips = listOf(5, 4, 3, 3, 2).sorted()
+//  val validShips = listOf(2, 2).sorted()
 
   fun createShot(game: Game, shotMessage: ShotMessage, userId: Long): Shot {
+    val myShots = getShotsFromUser(game, userId)
+    // todo fix que el random pueda estar repetido
     val pos = if (shotMessage.random)
       Point(
         (0 until game.width).random(),
@@ -74,7 +77,7 @@ class GameManager {
   }
 
   fun checkGameWinner(game: Game): Long? {
-    val (user1Ships: List<Ship>, user2Ships: List<Ship>) = game.ships.partition { it.userId == game.user1}
+    val (user1Ships: List<Ship>, user2Ships: List<Ship>) = game.ships.partition { it.userId == game.user1 }
     return if (user1Ships.none { it.health > 0 }) game.user2!!
     else if (user2Ships.none { it.health > 0 }) game.user1
     else null

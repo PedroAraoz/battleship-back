@@ -26,7 +26,7 @@ class GameSocketController(
   )
 
   @MessageMapping("/game/{gameId}/{userId}")
-  fun test(
+  fun handleMessage(
     @DestinationVariable gameId: UUID,
     @DestinationVariable userId: Long,
     @Payload m: GameMessage

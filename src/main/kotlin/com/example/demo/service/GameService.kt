@@ -62,6 +62,7 @@ class GameService(
     val game: Game = getGameOrError(messageInfo.gameId)
     val userId: Long = messageInfo.userId
     val ships: List<Ship> = gameManager.getShipsFromMessage(game, shipPlacementMessage)
+    // todo check if user does not have ship placement
     if (!gameManager.validateShipPlacement(ships))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid ship placement")
     ships.forEach { it.userId = userId }
@@ -77,11 +78,11 @@ class GameService(
   fun handleShot(shotMessage: ShotMessage, messageInfo: MessageInfo) {
     val game = getGame(messageInfo)
     val userId = messageInfo.userId
-    val shot: Shot = gameManager.createShot(game, shotMessage, userId)
     //check if it is the user turn
     if (!gameManager.isTurn(game, userId))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "not your turn")
-
+    val shot: Shot = gameManager.createShot(game, shotMessage, userId)
+    // todo check if shot is inside board
     //check if shot is unique
     if (!gameManager.checkShotUniqueness(game, shot, userId))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "you already shot there")
@@ -94,14 +95,18 @@ class GameService(
     }
     addShot(game, shot)
     val updatedGame = getGameOrError(game.id)
-    messagingService.sendShotMessage(game, shot)
+    messagingService.sendShotMessage(updatedGame, shot)
     val winner: Long? = gameManager.checkGameWinner(updatedGame)
-    if (winner != null) messagingService.sendEndGameMessage(game, winner)
-    else changeTurn(game, userId)
+    if (winner != null) {
+      updatedGame.winner = winner
+      val finalGame = gameRepository.save(updatedGame)
+      messagingService.sendEndGameMessage(finalGame)
+    }
+    else changeTurn(updatedGame, userId)
   }
 
   private fun changeTurn(game: Game, currentUser: Long) {
-    game.turn = game.getUsers().first { it != currentUser }
+    game.turn = game.getOpponentOf(currentUser)
     val updatedGame = gameRepository.save(game)
     messagingService.sendTurnStart(updatedGame)
   }
@@ -120,6 +125,7 @@ class GameService(
   fun startGame(id: UUID) {
     val game: Game = getGameOrError(id)
     game.started = true
+//    game.turn = listOf(game.user1).random()
     game.turn = listOf(game.user1, game.user2!!).random()
     gameRepository.save(game)
     messagingService.sendStartGameMessage(game)
@@ -144,10 +150,23 @@ class GameService(
     val gameId = messageInfo.gameId
     val userId = messageInfo.userId
     val game = getGameOrError(gameId)
-    val shipsPlaced = game.user1SetShips && game.user2SetShips
-    if (!shipsPlaced) messagingService.reSendStartGameMessage(game.id, userId)
-    else if (game.winner != null) messagingService.reSendEndGameMessage(game, userId)
-    else if (game.turn == userId) messagingService.sendTurnStart(game)
-    else messagingService.sendWaitMessage(game, userId)
+    if (!game.user1SetShips) {
+      handleStateOfShipPlacement(game, game.user1, userId)
+    } else if (!game.user2SetShips) {
+      handleStateOfShipPlacement(game, game.user2!!, userId)
+    }
+    else if (game.winner != null) messagingService.simpleSendEndGameMessage(game, userId)
+    else if (game.turn == userId) messagingService.simpleSendTurnStart(game)
+    else messagingService.simpleSendWaitingToOpponent(game)
+  }
+
+  private fun handleStateOfShipPlacement(game: Game, targetUserId: Long, currentUserId: Long) {
+    // if user that has not placed ships is == current user
+    // we send a message that indicates that ships have not been placed
+    // else we send a wait
+    if (targetUserId == currentUserId)
+      messagingService.simpleSendStartGameMessage(game, currentUserId)
+    else
+      messagingService.simpleSendWaiting(game, currentUserId)
   }
 }

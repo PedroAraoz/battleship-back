@@ -23,9 +23,11 @@ data class Ship(
   fun collide(pos: Point): Boolean {
     val horizontalShip = startPos.y == endPos.y
     return if (horizontalShip) {
-      pos.x in (startPos.x..endPos.x) || pos.x in (endPos.x..startPos.x)
+      (pos.x in (startPos.x..endPos.x) || pos.x in (endPos.x..startPos.x))
+        && (pos.y == startPos.y)
     } else {
-      pos.y in (startPos.y..endPos.y) || pos.y in (endPos.y..startPos.y)
+      (pos.y in (startPos.y..endPos.y) || pos.y in (endPos.y..startPos.y))
+        && (pos.x == startPos.x)
     }
   }
 

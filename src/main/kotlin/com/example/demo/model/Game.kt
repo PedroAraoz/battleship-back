@@ -18,7 +18,7 @@ data class Game(
 //  var messages: MutableList<GameMessage> = mutableListOf(),
   val createdAt: LocalDate = LocalDate.now(),
   var started: Boolean = false,
-  val winner: Long? = null,
+  var winner: Long? = null,
   var turn: Long? = null,
 
   @OneToMany(fetch = FetchType.EAGER)
@@ -52,4 +52,8 @@ data class Game(
   }
 
   fun getUsers(): List<Long> = listOf(user1, user2!!)
+
+  fun getOpponentOf(id: Long): Long {
+    return getUsers().first { it != id }
+  }
 }
