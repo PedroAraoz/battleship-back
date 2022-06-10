@@ -7,11 +7,10 @@ import java.awt.Point
 @Service
 class GameManager {
 
-  private val DEBUG = false
-  val validShips = if (DEBUG) listOf(2, 2).sorted() else listOf(5, 4, 3, 3, 2).sorted()
+  private val debug = false
+  val validShips = if (debug) listOf(2, 2).sorted() else listOf(5, 4, 3, 3, 2).sorted()
 
   fun createShot(game: Game, shotMessage: ShotMessage, userId: Long): Shot {
-    val myShots = getShotsFromUser(game, userId)
     // todo fix que el random pueda estar repetido
     val pos = if (shotMessage.random)
       Point(
@@ -51,10 +50,6 @@ class GameManager {
     return game.shots.filter { it.userId == userId }
   }
 
-  private fun getOpponentShots(game: Game, userId: Long): List<Shot> {
-    return game.shots.filter { it.userId != userId }
-  }
-
   fun validateShipPlacement(ships: List<Ship>): Boolean {
     return ships.map { it.size }.sorted() == validShips
     // todo add more validation
@@ -84,7 +79,12 @@ class GameManager {
   }
 
   fun chooseRandomTurn(game: Game): Long {
-    return if (DEBUG) game.user1
+    return if (debug) game.user1
     else game.getUsers().random()
+  }
+
+  fun surrender(game: Game, userId: Long) {
+    game.winner = game.getOpponentOf(userId)
+    game.surrender = true
   }
 }

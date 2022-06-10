@@ -6,7 +6,6 @@ import com.example.demo.service.AuthenticationService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
@@ -49,15 +48,4 @@ class UserController(
       user
     }
   }
-
-  private fun getAuthUser(): User? {
-    val principal = SecurityContextHolder.getContext().authentication.principal
-            as org.springframework.security.core.userdetails.User
-    return userService.getUserByEmail(principal.username)
-  }
-
-  private fun getAuthUserOrError(): User {
-    return getAuthUser() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-  }
-
 }

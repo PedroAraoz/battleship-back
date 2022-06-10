@@ -17,6 +17,7 @@ data class Game(
   val createdAt: LocalDate = LocalDate.now(),
   var started: Boolean = false,
   var winner: Long? = null,
+  var surrender: Boolean = false,
   var turn: Long? = null,
 
   @OneToMany(fetch = FetchType.EAGER)
@@ -30,12 +31,6 @@ data class Game(
   val height: Int = 10,
   val width: Int = 10,
 ) {
-  //  fun addMessage(message: GameMessage) = messages.add(message)
-  fun addShip(s: Ship) {
-    ships.add(s)
-
-  }
-
   fun addShot(s: Shot) {
     shots.add(s)
   }

@@ -14,10 +14,13 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
 enum class GameMessageType {
-  START, SHIP_PLACEMENT, TURN_START, SHOT, SHOT_RESULT, WAITING,
+  START,
+  SHIP_PLACEMENT,
+  TURN_START, WAITING,
+  SHOT, SHOT_RESULT,
   GET_BOARD, BOARD_DATA,
   GET_STATE,
-  WINNER,
+  SURRENDER, WINNER,
 }
 
 @JsonDeserialize(using = GameMessageDeserializer::class)
@@ -37,7 +40,8 @@ class SimpleMessage(
 
 @JsonDeserialize(`as` = WinnerMessage::class)
 data class WinnerMessage(
-  val winner: Long = 0
+  val winner: Long,
+  val surrender: Boolean
 ) : GameMessage(type = WINNER)
 
 @JsonDeserialize(`as` = ShotMessage::class)
@@ -76,7 +80,7 @@ internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
 
     return mapper.readValue(root.toString(),
       when (valueOf(root.get("type").asText())) {
-        START, TURN_START, GET_BOARD, WAITING, GET_STATE -> SimpleMessage::class.java
+        START, TURN_START, GET_BOARD, WAITING, GET_STATE, SURRENDER -> SimpleMessage::class.java
         SHIP_PLACEMENT -> ShipPlacementMessage::class.java
         SHOT -> ShotMessage::class.java
         SHOT_RESULT -> ShotResultMessage::class.java

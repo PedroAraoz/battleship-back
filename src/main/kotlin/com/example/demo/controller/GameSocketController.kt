@@ -42,6 +42,7 @@ class GameSocketController(
       SHOT -> gameService.handleShot(m as ShotMessage, messageInfo)
       GET_BOARD -> gameService.getBoard(messageInfo)
       GET_STATE -> gameService.getState(messageInfo)
+      SURRENDER -> gameService.surrender(messageInfo)
       else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST)
     }
     return true

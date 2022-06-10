@@ -90,14 +90,6 @@ class MessagingService(
     sendMessage(
       game.id,
       userId,
-      WinnerMessage(winner = game.winner!!))
-  }
-
-  fun sendWaitMessage(game: Game, userId: Long) {
-    sendMessage(
-      game.id,
-      userId,
-      SimpleMessage(WAITING)
-    )
+      WinnerMessage(winner = game.winner!!, surrender = game.surrender))
   }
 }

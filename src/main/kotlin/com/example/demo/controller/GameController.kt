@@ -4,7 +4,6 @@ import com.example.demo.model.Game
 import com.example.demo.model.SimpleResponse
 import com.example.demo.model.User
 import com.example.demo.service.GameService
-import com.example.demo.service.MessagingService
 import com.example.demo.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -18,10 +17,8 @@ import java.util.*
 
 @RestController
 class GameController(
-//  @Autowired private val messageService: MessageService,
   @Autowired private val gameService: GameService,
   @Autowired private val userService: UserService,
-  @Autowired private val messagingService: MessagingService
 ) {
 
   @PostMapping("/game/join")

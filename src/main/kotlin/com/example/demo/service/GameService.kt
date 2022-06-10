@@ -118,7 +118,7 @@ class GameService(
   }
 
   private fun getGame(m: MessageInfo): Game {
-    return getGame(m.gameId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND);
+    return getGame(m.gameId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
   }
 
   fun startGame(id: UUID) {
@@ -134,19 +134,13 @@ class GameService(
     gameRepository.save(g)
   }
 
-  fun addShip(g: Game, s: Ship) {
-    g.addShip(shipService.saveShip(s))
-    gameRepository.save(g)
-  }
-
   fun addShot(g: Game, shot: Shot) {
     g.addShot(shotService.saveShot(shot))
     gameRepository.save(g)
   }
 
   fun getState(messageInfo: MessageInfo) {
-    val gameId = messageInfo.gameId
-    val userId = messageInfo.userId
+    val (gameId, userId) = messageInfo
     val game = getGameOrError(gameId)
     if (!game.user1SetShips) {
       handleStateOfShipPlacement(game, game.user1, userId)
@@ -166,5 +160,13 @@ class GameService(
       messagingService.simpleSendStartGameMessage(game, currentUserId)
     else
       messagingService.simpleSendWaiting(game, currentUserId)
+  }
+
+  fun surrender(messageInfo: MessageInfo) {
+    val (gameId, userId) = messageInfo
+    val game = getGameOrError(gameId)
+    gameManager.surrender(game, userId)
+    val savedGame = gameRepository.save(game)
+    messagingService.sendEndGameMessage(savedGame)
   }
 }
