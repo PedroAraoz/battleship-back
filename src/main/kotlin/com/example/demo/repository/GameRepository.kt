@@ -28,4 +28,11 @@ interface GameRepository : JpaRepository<Game, UUID> {
     nativeQuery = true
   )
   fun getActiveGame(userId: Long): Game?
+
+  @Query(
+    value =
+    "SELECT * FROM Game g\n" +
+      "WHERE (g.user1 = ?1 or g.user2 = ?1);",
+    nativeQuery = true)
+  fun findAllByUserId(id: Long): List<Game>
 }

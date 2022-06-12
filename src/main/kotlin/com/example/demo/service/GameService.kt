@@ -176,4 +176,8 @@ class GameService(
     val savedGame = gameRepository.save(game)
     messagingService.sendEndGameMessage(savedGame)
   }
+
+  fun getGames(id: Long): List<Game> {
+    return gameRepository.findAllByUserId(id)
+  }
 }

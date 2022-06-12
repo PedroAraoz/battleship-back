@@ -64,6 +64,12 @@ class GameController(
     return SimpleResponse(true)
   }
 
+  @GetMapping("/games")
+  fun getGames(): List<Game> {
+    val user = getAuthUserOrError()
+    return gameService.getGames(user.id)
+  }
+
   private fun getAuthUser(): User? {
     val principal = SecurityContextHolder.getContext().authentication.principal
       as org.springframework.security.core.userdetails.User
