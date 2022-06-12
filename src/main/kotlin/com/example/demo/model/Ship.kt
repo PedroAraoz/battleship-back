@@ -11,7 +11,7 @@ data class Ship(
   @Id @GeneratedValue
   val id: Long = 0,
   val size: Int,
-  var health: Int = size,
+  var health: Int = 0,
   val startPos: Point,
   val endPos: Point,
   var userId: Long? = null

@@ -65,6 +65,7 @@ class GameService(
     if (!gameManager.validateShipPlacement(ships))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid ship placement")
     ships.forEach { it.userId = userId }
+    ships.forEach { it.health = it.size }
     addShips(game, shipService.saveShips(ships), userId)
 
     val updatedGame = getGameOrError(game.id)
@@ -100,8 +101,7 @@ class GameService(
       updatedGame.winner = winner
       val finalGame = gameRepository.save(updatedGame)
       messagingService.sendEndGameMessage(finalGame)
-    }
-    else changeTurn(updatedGame, userId)
+    } else changeTurn(updatedGame, userId)
   }
 
   private fun changeTurn(game: Game, currentUser: Long) {
@@ -145,13 +145,11 @@ class GameService(
     if (game.winner != null) messagingService.simpleSendEndGameMessage(game, userId)
     else if (!game.user1SetShips && !game.user2SetShips) {
       messagingService.simpleSendStartGameMessage(game, userId)
-    }
-    else if (!game.user1SetShips) {
+    } else if (!game.user1SetShips) {
       handleStateOfShipPlacement(game, game.user1, userId)
     } else if (!game.user2SetShips) {
       handleStateOfShipPlacement(game, game.user2!!, userId)
-    }
-    else if (game.turn == userId) messagingService.simpleSendTurnStart(game)
+    } else if (game.turn == userId) messagingService.simpleSendTurnStart(game)
     else messagingService.simpleSendWaitingToOpponent(game)
   }
 
