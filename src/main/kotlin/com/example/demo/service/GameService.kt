@@ -142,7 +142,8 @@ class GameService(
   fun getState(messageInfo: MessageInfo) {
     val (gameId, userId) = messageInfo
     val game = getGameOrError(gameId)
-    if (!game.user1SetShips && !game.user2SetShips) {
+    if (game.winner != null) messagingService.simpleSendEndGameMessage(game, userId)
+    else if (!game.user1SetShips && !game.user2SetShips) {
       messagingService.simpleSendStartGameMessage(game, userId)
     }
     else if (!game.user1SetShips) {
@@ -150,7 +151,6 @@ class GameService(
     } else if (!game.user2SetShips) {
       handleStateOfShipPlacement(game, game.user2!!, userId)
     }
-    else if (game.winner != null) messagingService.simpleSendEndGameMessage(game, userId)
     else if (game.turn == userId) messagingService.simpleSendTurnStart(game)
     else messagingService.simpleSendWaitingToOpponent(game)
   }
