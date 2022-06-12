@@ -1,5 +1,6 @@
 package com.example.demo.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDate
 import java.util.*
@@ -31,10 +32,12 @@ data class Game(
   val height: Int = 10,
   val width: Int = 10,
 ) {
+  @JsonIgnore
   fun addShot(s: Shot) {
     shots.add(s)
   }
 
+  @JsonIgnore
   fun addShips(newShips: List<Ship>, userId: Long) {
     if (user1 == userId) {
       user1SetShips = true
@@ -44,8 +47,10 @@ data class Game(
     ships.addAll(newShips)
   }
 
+  @JsonIgnore
   fun getUsers(): List<Long> = listOf(user1, user2!!)
 
+  @JsonIgnore
   fun getOpponentOf(id: Long): Long {
     return getUsers().first { it != id }
   }
