@@ -16,20 +16,20 @@ class OnStartup(
 ) {
   @EventListener(ApplicationReadyEvent::class)
   fun doSomethingAfterStartup() {
-    val a = userService.saveUser(User(
-      id = -1,
-      email = "A@mail.com",
-      firstName = "A",
-      lastname = "A",
-      imageUrl = "urlA"
-    ))
-    val b = userService.saveUser(User(
-      id = -1,
-      email = "B@mail.com",
-      firstName = "B",
-      lastname = "B",
-      imageUrl = "urlB"
-    ))
+//    val a = userService.saveUser(User(
+//      id = -1,
+//      email = "A@mail.com",
+//      firstName = "A",
+//      lastName = "A",
+//      imageUrl = "urlA"
+//    ))
+//    val b = userService.saveUser(User(
+//      id = -1,
+//      email = "B@mail.com",
+//      firstName = "B",
+//      lastName = "B",
+//      imageUrl = "urlB"
+//    ))
 
 //    print(gController.joinGame(a))
 //    val id = gController.joinGame(b).res

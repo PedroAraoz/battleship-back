@@ -27,7 +27,7 @@ class AuthenticationService {
     return User(
       id = -1,
       firstName = payload["given_name"] as String,
-      lastname = payload["family_name"] as String,
+      lastName = payload["family_name"] as String,
       email = payload.email,
       imageUrl = payload["picture"] as String,
     )
