@@ -56,6 +56,14 @@ class GameController(
     return game
   }
 
+  @PostMapping("/game/{gameId}/surrender")
+  fun surrender(@PathVariable gameId: UUID): SimpleResponse {
+    val user = getAuthUserOrError()
+    val game = getGame(gameId)
+    gameService.surrender(game, user.id)
+    return SimpleResponse(true)
+  }
+
   private fun getAuthUser(): User? {
     val principal = SecurityContextHolder.getContext().authentication.principal
       as org.springframework.security.core.userdetails.User

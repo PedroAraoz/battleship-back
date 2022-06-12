@@ -168,6 +168,10 @@ class GameService(
   fun surrender(messageInfo: MessageInfo) {
     val (gameId, userId) = messageInfo
     val game = getGameOrError(gameId)
+    surrender(game, userId)
+  }
+
+  fun surrender(game: Game, userId: Long) {
     gameManager.surrender(game, userId)
     val savedGame = gameRepository.save(game)
     messagingService.sendEndGameMessage(savedGame)
