@@ -11,12 +11,10 @@ class GameManager {
   val validShips = if (debug) listOf(2, 2).sorted() else listOf(5, 4, 3, 3, 2).sorted()
 
   fun createShot(game: Game, shotMessage: ShotMessage, userId: Long): Shot {
-    // todo fix que el random pueda estar repetido
+    val shots = getShotsFromUser(game, userId)
+    val points = shots.map { it.pos }
     val pos = if (shotMessage.random)
-      Point(
-        (0 until game.width).random(),
-        (0 until game.height).random()
-      )
+      generateRandomShot(game, points)
     else shotMessage.pos!!
 
 
@@ -24,6 +22,20 @@ class GameManager {
       pos = pos,
       userId = userId,
     )
+  }
+
+  private fun generateRandomShot(game: Game, points: List<Point>): Point {
+    var point = Point(
+      (0 until game.width).random(),
+      (0 until game.height).random()
+    )
+    while (point in points) {
+      point = Point(
+        (0 until game.width).random(),
+        (0 until game.height).random()
+      )
+    }
+    return point
   }
 
 
@@ -50,9 +62,18 @@ class GameManager {
     return game.shots.filter { it.userId == userId }
   }
 
-  fun validateShipPlacement(ships: List<Ship>): Boolean {
-    return ships.map { it.size }.sorted() == validShips
-    // todo add more validation
+  fun validateShipPlacement(game: Game, ships: List<Ship>): Boolean {
+    val w = game.width
+    val h = game.height
+    val val1: Boolean = ships.map { it.size }.sorted() == validShips
+    // todo check if w and h don't need flipping when x != y
+    val val2: Boolean = ships.none {
+      it.startPos.x >= h ||
+        it.startPos.y >= w ||
+        it.startPos.x < 0 ||
+        it.startPos.y < 0
+    }
+    return val1 && val2
   }
 
   fun getShipsFromMessage(game: Game, placement: ShipPlacementMessage): List<Ship> {
@@ -63,8 +84,7 @@ class GameManager {
   private fun generateRandomShips(game: Game): List<Ship> {
     val h = game.height
     val w = game.width
-
-    TODO("not yet implemented")
+    TODO("not implemented")
   }
 
   fun isTurn(game: Game, userId: Long): Boolean {
@@ -86,5 +106,17 @@ class GameManager {
   fun surrender(game: Game, userId: Long) {
     game.winner = game.getOpponentOf(userId)
     game.surrender = true
+  }
+
+  fun userPlacedShips(game: Game, userId: Long): Boolean {
+    return if (game.user1 == userId) game.user1SetShips
+    else game.user2SetShips
+  }
+
+  fun shotInsideBoard(game: Game, shot: Shot): Boolean {
+    // todo check if w and h don't need flipping when x != y
+    val x = shot.pos.x
+    val y = shot.pos.y
+    return x < game.width && y < game.height && x >= 0 && y >= 0
   }
 }

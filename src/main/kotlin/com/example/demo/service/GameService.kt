@@ -61,8 +61,9 @@ class GameService(
     val game: Game = getGameOrError(messageInfo.gameId)
     val userId: Long = messageInfo.userId
     val ships: List<Ship> = gameManager.getShipsFromMessage(game, shipPlacementMessage)
-    // todo check if user does not have ship placement
-    if (!gameManager.validateShipPlacement(ships))
+    if (gameManager.userPlacedShips(game, userId))
+      throw ResponseStatusException(HttpStatus.BAD_REQUEST, "user already placed ships")
+    if (!gameManager.validateShipPlacement(game, ships))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid ship placement")
     ships.forEach { it.userId = userId }
     ships.forEach { it.health = it.size }
@@ -82,7 +83,8 @@ class GameService(
     if (!gameManager.isTurn(game, userId))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "not your turn")
     val shot: Shot = gameManager.createShot(game, shotMessage, userId)
-    // todo check if shot is inside board
+    if (!gameManager.shotInsideBoard(game, shot))
+      throw ResponseStatusException(HttpStatus.BAD_REQUEST, "shot outside board")
     //check if shot is unique
     if (!gameManager.checkShotUniqueness(game, shot, userId))
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "you already shot there")
