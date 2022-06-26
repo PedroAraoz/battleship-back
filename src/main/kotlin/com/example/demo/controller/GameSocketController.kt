@@ -37,12 +37,12 @@ class GameSocketController(
     val jsonMessage = ObjectMapper().writeValueAsString(m)
     printlnCyan("Received message: $jsonMessage")
     when (m.type) {
-
       SHIP_PLACEMENT -> gameService.handleShipPlacement(m as ShipPlacementMessage, messageInfo)
       SHOT -> gameService.handleShot(m as ShotMessage, messageInfo)
       GET_BOARD -> gameService.getBoard(messageInfo)
       GET_STATE -> gameService.getState(messageInfo)
       SURRENDER -> gameService.surrender(messageInfo)
+      AUTOSHOOT -> gameService.toggleAutoShoot(messageInfo)
       else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST)
     }
     return true

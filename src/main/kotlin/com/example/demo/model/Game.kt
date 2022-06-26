@@ -20,10 +20,11 @@ data class Game(
   var winner: Long? = null,
   var surrender: Boolean = false,
   var turn: Long? = null,
+  var user1AutoShooting: Boolean = false,
+  var user2AutoShooting: Boolean = false,
 
   @OneToMany(fetch = FetchType.EAGER)
   val ships: MutableSet<Ship> = mutableSetOf(),
-
 
   @OneToMany(fetch = FetchType.EAGER)
   val shots: MutableSet<Shot> = mutableSetOf(),
@@ -53,5 +54,16 @@ data class Game(
   @JsonIgnore
   fun getOpponentOf(id: Long): Long {
     return getUsers().first { it != id }
+  }
+
+  @JsonIgnore
+  fun toggleAutoShooting(userId: Long): Boolean {
+    return if (user1 == userId) {
+      user1AutoShooting = !user1AutoShooting
+      user1AutoShooting
+    } else {
+      user2AutoShooting = !user2AutoShooting
+      user2AutoShooting
+    }
   }
 }

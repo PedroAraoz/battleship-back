@@ -44,12 +44,13 @@ class MessagingService(
     }
   }
 
-  fun sendBoard(id: UUID, userId: Long, ships: List<Ship>, shots: List<Shot>) {
+  fun sendBoard(id: UUID, userId: Long, ships: List<Ship>, shots: List<Shot>, autoShooting: Boolean) {
     val (your, opponent) = shots.partition { it.userId == userId }
     val message = BoardDataMessage(
       ships = ships,
       yourShots = your,
       opponentShots = opponent,
+      autoShooting = autoShooting,
     )
     sendMessage(
       id,

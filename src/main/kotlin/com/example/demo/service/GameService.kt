@@ -103,20 +103,29 @@ class GameService(
       updatedGame.winner = winner
       val finalGame = gameRepository.save(updatedGame)
       messagingService.sendEndGameMessage(finalGame)
-    } else changeTurn(updatedGame, userId)
+    } else changeTurn(updatedGame, userId, messageInfo)
   }
 
-  private fun changeTurn(game: Game, currentUser: Long) {
-    game.turn = game.getOpponentOf(currentUser)
-    val updatedGame = gameRepository.save(game)
-    messagingService.sendTurnStart(updatedGame)
+  private fun changeTurn(game: Game, currentUser: Long, messageInfo: MessageInfo) {
+    // if user of next turn is autoshooting, save game and create new shot.
+    if (userIsAutoShooting(game.getOpponentOf(currentUser), game)) {
+      gameRepository.save(game)
+      autoShoot(messageInfo)
+      getBoard(messageInfo)
+    } else {
+      game.turn = game.getOpponentOf(currentUser)
+      val updatedGame = gameRepository.save(game)
+      messagingService.sendTurnStart(updatedGame)
+    }
   }
 
   fun getBoard(messageInfo: MessageInfo) {
     val game: Game = getGameOrError(messageInfo.gameId)
+    val userId: Long = messageInfo.userId
     val shots: List<Shot> = game.shots.toList()
     val ships: List<Ship> = gameManager.getShipsFromUser(game, messageInfo.userId)
-    messagingService.sendBoard(game.id, messageInfo.userId, ships, shots)
+    val autoShooting = userIsAutoShooting(userId, game)
+    messagingService.sendBoard(game.id, userId, ships, shots, autoShooting)
   }
 
   private fun getGame(m: MessageInfo): Game {
@@ -179,5 +188,22 @@ class GameService(
 
   fun getGames(id: Long): List<Game> {
     return gameRepository.findAllByUserId(id)
+  }
+
+  fun toggleAutoShoot(messageInfo: MessageInfo) {
+    val (gameId, userId) = messageInfo
+    val game = getGameOrError(gameId)
+    if (game.toggleAutoShooting(userId) && game.turn == userId) {
+      gameRepository.save(game)
+      autoShoot(messageInfo)
+    } else gameRepository.save(game)
+  }
+
+  fun userIsAutoShooting(userId: Long, game: Game): Boolean {
+    return ((userId == game.user1) && game.user1AutoShooting) || ((userId == game.user2) && game.user2AutoShooting)
+  }
+
+  fun autoShoot(messageInfo: MessageInfo) {
+    handleShot(ShotMessage(null, true), messageInfo)
   }
 }

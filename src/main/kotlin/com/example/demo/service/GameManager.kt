@@ -17,7 +17,6 @@ class GameManager {
       generateRandomShot(game, points)
     else shotMessage.pos!!
 
-
     return Shot(
       pos = pos,
       userId = userId,
@@ -38,12 +37,10 @@ class GameManager {
     return point
   }
 
-
   fun calculateHit(game: Game, shot: Shot): Ship? {
     val ships = getOpponentShips(game, shot.userId)
     return ships.firstOrNull { it.collide(shot.pos) }
   }
-
 
   fun checkShotUniqueness(game: Game, shot: Shot, userId: Long): Boolean {
     val shots = getShotsFromUser(game, userId)

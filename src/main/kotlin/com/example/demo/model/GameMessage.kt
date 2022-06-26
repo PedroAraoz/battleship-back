@@ -21,6 +21,7 @@ enum class GameMessageType {
   GET_BOARD, BOARD_DATA,
   GET_STATE,
   SURRENDER, WINNER,
+  AUTOSHOOT // TODO should have userId in message?
 }
 
 @JsonDeserialize(using = GameMessageDeserializer::class)
@@ -31,7 +32,6 @@ abstract class GameMessage(
   @JsonProperty(value = "type")
   val type: GameMessageType = START
 )
-
 
 @JsonDeserialize(`as` = SimpleMessage::class)
 class SimpleMessage(
@@ -70,7 +70,8 @@ data class ShipPlacementMessage(
 data class BoardDataMessage(
   val ships: List<Ship> = listOf(),
   val yourShots: List<Shot> = listOf(),
-  val opponentShots: List<Shot> = listOf()
+  val opponentShots: List<Shot> = listOf(),
+  val autoShooting: Boolean = false,
 ) : GameMessage(type = BOARD_DATA)
 
 internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
@@ -80,7 +81,7 @@ internal class GameMessageDeserializer : JsonDeserializer<GameMessage?>() {
 
     return mapper.readValue(root.toString(),
       when (valueOf(root.get("type").asText())) {
-        START, TURN_START, GET_BOARD, WAITING, GET_STATE, SURRENDER -> SimpleMessage::class.java
+        START, TURN_START, GET_BOARD, WAITING, GET_STATE, SURRENDER, AUTOSHOOT -> SimpleMessage::class.java
         SHIP_PLACEMENT -> ShipPlacementMessage::class.java
         SHOT -> ShotMessage::class.java
         SHOT_RESULT -> ShotResultMessage::class.java
