@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfigurer : WebMvcConfigurer {
   override fun addCorsMappings(registry: CorsRegistry) {
     registry.addMapping("/**")
-      .allowedOrigins("https://battleship-front.herokuapp.com:3000")
+      .allowedOrigins("https://battleship-front.herokuapp.com")
       .allowedHeaders(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE)
       .allowedMethods(HttpMethod.GET.name, HttpMethod.POST.name)
       .maxAge(86400)
