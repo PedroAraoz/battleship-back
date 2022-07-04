@@ -22,7 +22,7 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
   override fun registerStompEndpoints(registry: StompEndpointRegistry) {
     registry.addEndpoint("/ws")
       .setAllowedOriginPatterns(
-        "http://localhost:3000",
+        "https://battleship-front.herokuapp.com:3000",
       ).withSockJS()
       .setClientLibraryUrl("https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js")
   }
