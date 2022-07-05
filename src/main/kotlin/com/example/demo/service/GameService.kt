@@ -107,16 +107,13 @@ class GameService(
   }
 
   private fun changeTurn(game: Game, currentUser: Long, messageInfo: MessageInfo) {
+    game.turn = game.getOpponentOf(currentUser)
+    val updatedGame = gameRepository.save(game)
     // if user of next turn is autoshooting, save game and create new shot.
-    if (userIsAutoShooting(game.getOpponentOf(currentUser), game)) {
-      gameRepository.save(game)
-      autoShoot(messageInfo)
-      getBoard(messageInfo)
-    } else {
-      game.turn = game.getOpponentOf(currentUser)
-      val updatedGame = gameRepository.save(game)
+    if (userIsAutoShooting(updatedGame.turn!!, updatedGame))
+      autoShoot(MessageInfo(game.id, updatedGame.turn!!))
+    else
       messagingService.sendTurnStart(updatedGame)
-    }
   }
 
   fun getBoard(messageInfo: MessageInfo) {
@@ -193,10 +190,9 @@ class GameService(
   fun toggleAutoShoot(messageInfo: MessageInfo) {
     val (gameId, userId) = messageInfo
     val game = getGameOrError(gameId)
-    if (game.toggleAutoShooting(userId) && game.turn == userId) {
-      gameRepository.save(game)
-      autoShoot(messageInfo)
-    } else gameRepository.save(game)
+    val toggled = game.toggleAutoShooting(userId)
+    gameRepository.save(game)
+    if (toggled && gameManager.isTurn(game, userId)) autoShoot(messageInfo)
   }
 
   fun userIsAutoShooting(userId: Long, game: Game): Boolean {
@@ -204,6 +200,7 @@ class GameService(
   }
 
   fun autoShoot(messageInfo: MessageInfo) {
+    Thread.sleep(200)
     handleShot(ShotMessage(null, true), messageInfo)
   }
 }
